@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+						http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+
+	<http pattern="/*.html" security="none"></http>
+	<http pattern="/*.ico" security="none"></http>
+	<http pattern="/css/**" security="none"></http>
+	<http pattern="/img/**" security="none"></http>
+	<http pattern="/js/**" security="none"></http>
+	<http pattern="/plugins/**" security="none"></http>
+	<!-- 注册要用的URI，必须配置，否则无法注册 -->
+	<http pattern="/seller/add.do" security="none"></http>
+
+	<http use-expressions="false">
+		<intercept-url pattern="/**" access="ROLE_SELLER" />
+		<form-login login-page="/shoplogin.html"
+			authentication-failure-url="/shoplogin.html" default-target-url="/admin/index.html"
+			always-use-default-target="true" />
+		<headers>
+			<frame-options policy="SAMEORIGIN" />
+		</headers>
+		<csrf disabled="true" />
+		<logout />
+	</http>
+
+	<authentication-manager>
+		<authentication-provider user-service-ref="userDetailsService">
+			<password-encoder ref="bCryptPasswordEncoder"></password-encoder>
+		</authentication-provider>
+	</authentication-manager>
+	<beans:bean id="userDetailsService" class="com.pinyougou.service.UserDetailsServiceImpl"></beans:bean>
+	<beans:bean id="bCryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"></beans:bean>
+
+	<!-- 引用dubbo 服务 -->
+	<dubbo:application name="pinyougou-shop-web" />
+	<dubbo:registry address="zookeeper://192.168.25.130:2181" />
+	<dubbo:annotation package="com.pinyougou.service" />
+</beans:beans>
